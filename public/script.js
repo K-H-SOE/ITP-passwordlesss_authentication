@@ -81,15 +81,15 @@ function showLoadingWithTimeout(message = "Processing...", timeout = 10000) {
 // Event Listeners
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM loaded - initializing authentication app");
-  
+
   // Initialize - make sure loading overlay is hidden on page load
   hideLoading();
-  
+
   // Transition from login page to authentication options
   document.getElementById("loginForm").addEventListener("submit", function (e) {
     e.preventDefault();
     console.log("Login form submitted");
-    
+
     const username = document.getElementById("username").value;
     console.log("Username entered:", username);
 
@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((response) => {
           // Log response status for debugging
           console.log("API Response Status:", response.status);
-          
+
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((data) => {
           // Log response data for debugging
           console.log("API Response Data:", data);
-          
+
           hideLoading();
           showFeedback(
             data.message || "Login approved successfully!",
@@ -232,7 +232,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const errorMessage = `Error during push approval: ${error.message}`;
           showFeedback(errorMessage, "error");
           console.error("Push approval error:", error);
-          
+
           setTimeout(() => {
             showElement("authOptions");
           }, 1000);
@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((response) => {
           // Log response status for debugging
           console.log("API Response Status:", response.status);
-          
+
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const errorMessage = `Error processing request: ${error.message}`;
           showFeedback(errorMessage, "error");
           console.error("Push denial error:", error);
-          
+
           setTimeout(() => {
             showElement("authOptions");
           }, 1000);
@@ -302,14 +302,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // For debugging - log the API path
     console.log("Calling API:", getApiPath("otp.php"));
-    
+
     // Simulate API call with a timeout
     setTimeout(() => {
       fetch(getApiPath("otp.php"))
         .then((response) => {
           // Log response status for debugging
           console.log("API Response Status:", response.status);
-          
+
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
@@ -318,7 +318,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((data) => {
           // Log response data for debugging
           console.log("API Response Data:", data);
-          
+
           hideLoading();
           document.getElementById("otpCode").innerText = data.otp;
           showElement("otpSection");
@@ -353,7 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const errorMessage = `Error generating OTP: ${error.message}`;
           showFeedback(errorMessage, "error");
           console.error("OTP generation error:", error);
-          
+
           setTimeout(() => {
             showElement("authOptions");
           }, 1000);
@@ -375,7 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // For debugging - log the API path and payload
     console.log("Calling API:", getApiPath("verify_otp.php"));
     console.log("Payload:", { enteredOTP, generatedOTP });
-    
+
     // Simulate API call with a timeout
     setTimeout(() => {
       fetch(getApiPath("verify_otp.php"), {
@@ -386,7 +386,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((response) => {
           // Log response status for debugging
           console.log("API Response Status:", response.status);
-          
+
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
@@ -395,7 +395,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((data) => {
           // Log response data for debugging
           console.log("API Response Data:", data);
-          
+
           hideLoading();
           clearInterval(otpTimer);
 
@@ -448,85 +448,97 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("btnMagicLink")
     .addEventListener("click", function () {
       hideElement("authOptions");
-      
+
       // Get the user's email
       const username = document.getElementById("username").value;
-      
+
       // Display the email in the modal and preview
       document.getElementById("magicLinkEmail").textContent = username;
       document.querySelector(".email-recipient").textContent = username;
-      
+
       // Show modal with loading state
       showModal("magicLinkModal");
-      document.getElementById("magicLinkUrl").textContent = "Generating secure link...";
+      document.getElementById("magicLinkUrl").textContent =
+        "Generating secure link...";
       document.getElementById("magicLinkUrl").classList.add("generating");
-      
+
       // Generate a magic link
       fetch(getApiPath("magic-link.php"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: username })
+        body: JSON.stringify({ email: username }),
       })
-        .then(response => {
+        .then((response) => {
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
           return response.json();
         })
-        .then(data => {
+        .then((data) => {
           console.log("Magic Link generated:", data);
-          
+
           // Update the magic link button
           const magicLinkElement = document.getElementById("magicLinkUrl");
           magicLinkElement.href = data.magicLinkUrl;
           magicLinkElement.classList.remove("generating");
-          magicLinkElement.innerHTML = '<i class="fas fa-lock"></i> Secure Sign In';
-          
+          magicLinkElement.innerHTML =
+            '<i class="fas fa-lock"></i> Secure Sign In';
+
           // Store the token for verification
           magicLinkElement.dataset.token = data.token;
-          
+
           // Setup expiry timer if available
           if (data.expiresAt) {
-            const expiryMinutes = Math.floor((data.expiresAt - Math.floor(Date.now() / 1000)) / 60);
-            document.getElementById("magicLinkExpiry").textContent = expiryMinutes;
+            const expiryMinutes = Math.floor(
+              (data.expiresAt - Math.floor(Date.now() / 1000)) / 60
+            );
+            document.getElementById("magicLinkExpiry").textContent =
+              expiryMinutes;
           }
-          
+
           // Simulate sending magic link
           showFeedback(`Magic link sent to ${username}`, "info");
-          
+
           // Set up event listener for the magic link
-          magicLinkElement.addEventListener('click', handleMagicLinkClick);
+          magicLinkElement.addEventListener("click", handleMagicLinkClick);
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Magic Link generation error:", error);
           const magicLinkElement = document.getElementById("magicLinkUrl");
-          magicLinkElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error generating link';
+          magicLinkElement.innerHTML =
+            '<i class="fas fa-exclamation-triangle"></i> Error generating link';
           magicLinkElement.classList.add("error");
           showFeedback(`Error sending magic link: ${error.message}`, "error");
         });
     });
-    
+
   // Handle magic link click
   function handleMagicLinkClick(e) {
     e.preventDefault();
-    
+
     // Check if there's an error state
-    if (this.classList.contains("error") || this.classList.contains("generating")) {
+    if (
+      this.classList.contains("error") ||
+      this.classList.contains("generating")
+    ) {
       showFeedback("Please wait or try again later", "warning");
       return;
     }
-    
+
     hideModal("magicLinkModal");
     showLoadingWithTimeout("Verifying your identity...", 6000);
-    
+
     // Get token from data attribute
     const token = this.dataset.token;
-    
+
     // Simulate verification process
     setTimeout(() => {
       hideLoading();
-      showFeedback("Magic link verification successful! Welcome back!", "success");
-      
+      showFeedback(
+        "Magic link verification successful! Welcome back!",
+        "success"
+      );
+
       // Simulate redirect to dashboard
       setTimeout(() => {
         window.location.href = "dashboard.html";
@@ -537,51 +549,56 @@ document.addEventListener("DOMContentLoaded", function () {
   // Resend Magic Link
   document
     .getElementById("resendMagicLink")
-    .addEventListener("click", function() {
+    .addEventListener("click", function () {
       // Reset link display
       const magicLinkElement = document.getElementById("magicLinkUrl");
       magicLinkElement.textContent = "Generating secure link...";
       magicLinkElement.classList.add("generating");
       magicLinkElement.classList.remove("error");
-      
+
       // Get the user's email
       const username = document.getElementById("username").value;
-      
+
       // Generate a new magic link
       fetch(getApiPath("magic-link.php"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: username })
+        body: JSON.stringify({ email: username }),
       })
-        .then(response => {
+        .then((response) => {
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
           return response.json();
         })
-        .then(data => {
+        .then((data) => {
           console.log("New Magic Link generated:", data);
-          
+
           // Update the magic link button
           magicLinkElement.href = data.magicLinkUrl;
           magicLinkElement.classList.remove("generating");
-          magicLinkElement.innerHTML = '<i class="fas fa-lock"></i> Secure Sign In';
-          
+          magicLinkElement.innerHTML =
+            '<i class="fas fa-lock"></i> Secure Sign In';
+
           // Store the token for verification
           magicLinkElement.dataset.token = data.token;
-          
+
           // Setup expiry timer if available
           if (data.expiresAt) {
-            const expiryMinutes = Math.floor((data.expiresAt - Math.floor(Date.now() / 1000)) / 60);
-            document.getElementById("magicLinkExpiry").textContent = expiryMinutes;
+            const expiryMinutes = Math.floor(
+              (data.expiresAt - Math.floor(Date.now() / 1000)) / 60
+            );
+            document.getElementById("magicLinkExpiry").textContent =
+              expiryMinutes;
           }
-          
+
           // Show success message
           showFeedback(`New magic link sent to ${username}`, "info");
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Magic Link regeneration error:", error);
-          magicLinkElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error generating link';
+          magicLinkElement.innerHTML =
+            '<i class="fas fa-exclamation-triangle"></i> Error generating link';
           magicLinkElement.classList.add("error");
           showFeedback(`Error resending magic link: ${error.message}`, "error");
         });
@@ -592,13 +609,16 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("simulateLogin")
     .addEventListener("click", function () {
       const magicLinkElement = document.getElementById("magicLinkUrl");
-      
+
       // Don't proceed if link is in error or loading state
-      if (magicLinkElement.classList.contains("error") || magicLinkElement.classList.contains("generating")) {
+      if (
+        magicLinkElement.classList.contains("error") ||
+        magicLinkElement.classList.contains("generating")
+      ) {
         showFeedback("Please wait for a valid link to be generated", "warning");
         return;
       }
-      
+
       // Trigger the magic link click handler
       magicLinkElement.click();
     });
