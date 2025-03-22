@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Secure Passwordless Authentication</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Login Page -->
+      <div id="loginPage" class="card fade-in">
+        <h2>Welcome Back</h2>
+        <p class="text-center">Sign in to your account</p>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">Email or Username</label>
+            <input
+              type="text"
+              id="username"
+              placeholder="Enter your email or username"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-arrow-right"></i> Continue
+          </button>
+        </form>
+      </div>
+
+      <!-- Authentication Options -->
+      <div id="authOptions" class="hidden">
+        <h3>Choose Authentication Method</h3>
+        <p class="user-greeting">
+          Hello, <span id="userGreeting">User</span>! Select how you want to
+          sign in:
+        </p>
+
+        <div class="auth-buttons">
+          <button id="btnBiometric" class="auth-option btn-biometric">
+            <i class="fas fa-fingerprint"></i> Biometric Authentication
+          </button>
+
+          <button id="btnPush" class="auth-option btn-push">
+            <i class="fas fa-bell"></i> Push Notification
+          </button>
+
+          <button id="btnOTP" class="auth-option btn-otp">
+            <i class="fas fa-key"></i> One-Time Password (OTP)
+          </button>
+
+          <button id="btnMagicLink" class="auth-option btn-magic">
+            <i class="fas fa-magic"></i> Magic Link
+          </button>
+        </div>
+
+        <div class="text-center mt-20">
+          <button id="backToLogin" class="btn-text">
+            <i class="fas fa-arrow-left"></i> Not you? Go back
+          </button>
+        </div>
+      </div>
+
+      <!-- Push Notification Modal -->
+      <div id="pushModal" class="modal">
+        <div class="modal-content">
+          <h3>Authentication Request</h3>
+          <p>We've sent a push notification to your device.</p>
+          <div class="device-icon">
+            <i class="fas fa-mobile-alt fa-3x"></i>
+          </div>
+          <p>Approve the login request on your device to continue.</p>
+
+          <!-- For demo purposes only -->
+          <div class="modal-buttons">
+            <button id="approvePush">
+              <i class="fas fa-check"></i> Approve
+            </button>
+            <button id="denyPush"><i class="fas fa-times"></i> Deny</button>
+          </div>
+
+          <div class="text-center mt-20">
+            <button id="cancelPush" class="btn-text">
+              <i class="fas fa-times-circle"></i> Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Magic Link Modal -->
+      <div id="magicLinkModal" class="modal">
+        <div class="modal-content">
+          <h3>Magic Link Sent</h3>
+          <p>We've sent a secure login link to <span id="magicLinkEmail">your email address</span>.</p>
+          <div class="email-icon">
+            <i class="fas fa-envelope fa-3x"></i>
+          </div>
+          
+          <!-- Magic Link details (for demo purposes) -->
+          <div class="magic-link-details">
+            <div class="magic-link-preview">
+              <h4>Your Secure Link</h4>
+              <div class="email-preview">
+                <div class="email-header">
+                  <div><strong>From:</strong> Secure Auth <no-reply@secureauth.com></div>
+                  <div><strong>To:</strong> <span class="email-recipient">you@example.com</span></div>
+                  <div><strong>Subject:</strong> Your Magic Login Link</div>
+                </div>
+                <div class="email-body">
+                  <p>Hello,</p>
+                  <p>Click the link below to sign in to your account. This link will expire in 15 minutes.</p>
+                  <div class="magic-link-button-container">
+                    <a id="magicLinkUrl" href="#" class="magic-link-button">
+                      <i class="fas fa-lock"></i> Secure Sign In
+                    </a>
+                  </div>
+                  <p>If you didn't request this link, you can safely ignore this email.</p>
+                </div>
+              </div>
+            </div>
+            <div class="magic-link-expiry">
+              <p>This link will expire in <span id="magicLinkExpiry">15</span> minutes</p>
+            </div>
+          </div>
+          
+          <p>Check your inbox and click the link to sign in automatically.</p>
+
+          <!-- For demo purposes only -->
+          <div class="text-center mt-20">
+            <button id="simulateLogin" class="btn-primary">
+              <i class="fas fa-link"></i> Simulate Link Click
+            </button>
+          </div>
+
+          <div class="text-center mt-10">
+            <button id="resendMagicLink" class="btn-text">
+              <i class="fas fa-sync"></i> Resend Link
+            </button>
+            <button id="cancelMagicLink" class="btn-text">
+              <i class="fas fa-times-circle"></i> Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- OTP Section -->
+      <div id="otpSection" class="hidden card">
+        <h3>OTP Verification</h3>
+        <p>Enter the verification code sent to your device</p>
+
+        <div class="otp-display">
+          <p>
+            Your OTP for demo purposes:
+            <span id="otpCode" class="otp-code"></span>
+          </p>
+          <p>
+            <small
+              >The code will expire in
+              <span id="otpTimer">60</span> seconds</small
+            >
+          </p>
+        </div>
+
+        <div class="otp-input-container">
+          <input type="text" class="otp-input" maxlength="1" data-index="0" />
+          <input type="text" class="otp-input" maxlength="1" data-index="1" />
+          <input type="text" class="otp-input" maxlength="1" data-index="2" />
+          <input type="text" class="otp-input" maxlength="1" data-index="3" />
+          <input type="text" class="otp-input" maxlength="1" data-index="4" />
+          <input type="text" class="otp-input" maxlength="1" data-index="5" />
+        </div>
+
+        <input type="hidden" id="otpInput" />
+
+        <button id="verifyOTP" class="btn-primary">
+          <i class="fas fa-check-circle"></i> Verify Code
+        </button>
+
+        <div class="text-center mt-10">
+          <button id="resendOTP" class="btn-text">
+            <i class="fas fa-sync"></i> Resend Code
+          </button>
+        </div>
+
+        <div class="text-center mt-10">
+          <button id="cancelOTP" class="btn-text">
+            <i class="fas fa-arrow-left"></i> Go back
+          </button>
+        </div>
+      </div>
+
+      <!-- Biometric Authentication Section -->
+      <div id="biometricSection" class="hidden card">
+        <h3>Biometric Authentication</h3>
+        <div class="biometric-animation">
+          <i class="fas fa-fingerprint fa-5x pulse"></i>
+        </div>
+        <p>Scan your fingerprint to verify your identity</p>
+
+        <div class="text-center mt-20">
+          <button id="cancelBiometric" class="btn-text">
+            <i class="fas fa-times-circle"></i> Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Feedback Section -->
+      <div id="feedback" class="fade-in"></div>
+
+      <!-- Loading Overlay - improved version -->
+      <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p id="loadingText">Processing...</p>
+        <p class="small">Please wait...</p>
+      </div>
+    </div>
+
+    <script src="mock-api.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
